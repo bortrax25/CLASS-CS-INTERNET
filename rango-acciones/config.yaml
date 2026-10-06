@@ -1,0 +1,24 @@
+# Configuración de rango-acciones
+
+periodo:
+  inicio: "2026-01-01"
+  fin: null              # null = hasta hoy
+
+filtros:
+  activos: true
+  cobertura_min: 0.80     # fracción de días hábiles con dato
+  precio_min: 1.0         # en moneda local
+  volumen_prom_min: 100000  # acciones por día
+
+descarga:
+  tamano_lote: 50
+  pausa_seg: 2
+  reintentos: 4
+
+universos:
+  sp500: data/universes/sp500.csv
+  bvl: data/universes/bvl.csv
+
+rutas:
+  cache: data/cache
+  output: output
