@@ -10,6 +10,19 @@ pip install -r requirements.txt
 pytest            # no necesita internet
 ```
 
+## Uso
+
+```bash
+python main.py --universe sp500 --top 50
+python main.py --universe nasdaq100 --top 20 --sin-filtros
+python main.py --universe sp500 --intraday
+python main.py --universe sp500 --hasta 2026-09-25   # otra fecha de corte, solo esta corrida
+python main.py --universe sp500 --refrescar          # ignora la caché
+```
+
+Genera `output/top_{universo}_{fecha de corte}.xlsx` (con `_intraday` o `_sinfiltros` al final
+en esas variantes) y muestra el top 10 en consola.
+
 ## Universos
 
 | Universo | Archivo | Tickers | Fuente |

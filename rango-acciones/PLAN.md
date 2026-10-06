@@ -118,6 +118,11 @@ python main.py --universe nasdaq100 --top 20 --sin-filtros
 python main.py --universe sp500 --intraday
 ```
 
+- [x] `main.py` une descarga, métricas, filtros y Excel. Opciones: `--universe` (sp500, nasdaq100), `--top`, `--sin-filtros`, `--intraday`, `--hasta AAAA-MM-DD` (cambia la fecha final solo para esa corrida) y `--refrescar`.
+- [x] Las variantes no pisan el Excel principal: `top_sp500_2026-10-05_intraday.xlsx`, `..._sinfiltros.xlsx`.
+- [x] Muestra en consola el top 10 y las acciones del top marcadas para revisar.
+- [x] Tests con la descarga simulada (`tests/test_main.py`). Verificado con los tres comandos de arriba (2026-10-06): mismo resultado que el Excel del Paso 5, en ~5 s con caché.
+
 ### Paso 7: Validación manual
 - [ ] Revisar a mano 3 tickers del top contra un gráfico de Yahoo Finance o TradingView y confirmar que el mínimo y el máximo coinciden.
 - [ ] Revisar si alguno del top tuvo un split en 2026 y confirmar que el ajuste funcionó.
