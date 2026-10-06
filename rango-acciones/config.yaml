@@ -5,10 +5,17 @@ periodo:
   fin: null              # null = hasta hoy
 
 filtros:
-  activos: true
-  cobertura_min: 0.80     # fracción de días hábiles con dato
-  precio_min: 1.0         # en moneda local
-  volumen_prom_min: 100000  # acciones por día
+  activos: true             # false = ranking en bruto (igual que --sin-filtros)
+  cobertura_min: 0.80       # fracción de sesiones del periodo con dato
+  precio_actual_min: 1.0    # último cierre, en USD
+  # Liquidez en dólares (cierre x volumen), no en acciones: NVR negocia ~30 mil acciones
+  # al día pero mueve ~200 millones de USD
+  volumen_usd_prom_min: 5000000  # USD por día, promedio del periodo
+
+revision:
+  # No excluye: marca para revisar a mano las acciones con una variación de un día
+  # mayor a este porcentaje (posible spin-off o split sin ajustar, como CTVA)
+  salto_pct: 50
 
 descarga:
   tamano_lote: 50

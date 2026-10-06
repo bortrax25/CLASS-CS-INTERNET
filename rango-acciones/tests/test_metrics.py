@@ -142,3 +142,9 @@ def test_salto_maximo_con_signo():
 def test_salto_un_solo_dato():
     r = una(serie("A", [42]))
     assert np.isnan(r.salto_max_pct) and pd.isna(r.fecha_salto)
+
+
+def test_volumen_en_usd():
+    df = serie("A", [10, 20, np.nan], volumen=[100, 300, 999])
+    r = una(df)
+    assert r.volumen_usd_promedio == pytest.approx((10 * 100 + 20 * 300) / 2)  # solo días con cierre

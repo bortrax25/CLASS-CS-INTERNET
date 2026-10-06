@@ -13,6 +13,7 @@ Salida: una fila por ticker con
                "sin cambio" (mismo día: serie plana o un solo dato)
     precio_actual, fecha_actual   último cierre disponible
     volumen_promedio              media diaria de acciones negociadas
+    volumen_usd_promedio          media diaria de cierre x volumen (liquidez en USD)
     dias_con_dato, cobertura      cobertura = dias_con_dato / sesiones del periodo
     salto_max_pct, fecha_salto    mayor variación de cierre a cierre (con signo). Sirve
                                   para detectar ajustes que faltan: p. ej. CTVA cayó 84 %
@@ -34,7 +35,7 @@ SUBIO, CAYO, SIN_CAMBIO = "subió", "cayó", "sin cambio"
 COLUMNAS = [
     "ticker", "precio_min", "fecha_min", "precio_max", "fecha_max",
     "rango_abs", "rango_pct", "ratio", "direccion",
-    "precio_actual", "fecha_actual", "volumen_promedio",
+    "precio_actual", "fecha_actual", "volumen_promedio", "volumen_usd_promedio",
     "dias_con_dato", "cobertura", "salto_max_pct", "fecha_salto", "moneda",
 ]
 
@@ -54,6 +55,8 @@ def _metricas_ticker(df: pd.DataFrame, intraday: bool) -> dict:
         "fecha_salto": con_cierre.at[i_salto, "fecha"] if i_salto is not None else pd.NaT,
         "dias_con_dato": len(con_cierre),
         "volumen_promedio": df["volume"].mean() if df["volume"].notna().any() else np.nan,
+        "volumen_usd_promedio": (con_cierre["close"] * con_cierre["volume"]).mean()
+        if con_cierre["volume"].notna().any() else np.nan,
         "precio_actual": con_cierre["close"].iloc[-1] if len(con_cierre) else np.nan,
         "fecha_actual": con_cierre["fecha"].iloc[-1] if len(con_cierre) else pd.NaT,
     }

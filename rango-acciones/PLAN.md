@@ -18,7 +18,8 @@ Encontrar las empresas cotizadas cuya diferencia entre el precio máximo y el m�
 | Opción alternativa | Flag `--intraday` que usa High/Low | Para comparar. No es la opción por defecto |
 | Periodo | `2026-01-01` hasta hoy | Configurable en `config.yaml` |
 | Cobertura mínima | Excluir tickers con menos del 80 % de días hábiles con dato | Deja fuera las IPO y los deslistados del año, que tienen periodos cortos. Configurable |
-| Filtros anti-ruido | Precio mínimo (por ejemplo $1) y volumen promedio diario mínimo | Evita que el top se llene de penny stocks ilíquidas. Configurable, y desactivables |
+| Filtros anti-ruido | Precio actual mínimo ($1) y volumen promedio diario mínimo **en USD** (cierre × volumen, $5 M) | Evita que el top se llene de penny stocks ilíquidas. En USD y no en acciones para no castigar acciones caras (NVR). Configurable, y desactivables |
+| Saltos de un día > 50 % | Se marcan para revisión en la columna `revisar`, no se excluyen | Pueden ser spin-offs sin ajustar (CTVA) o noticias reales (MRNA) |
 
 ---
 
@@ -83,14 +84,19 @@ Por ticker:
 - [x] `rango_abs`, `rango_pct`, `ratio`
 - [x] `direccion`: si el mínimo fue antes que el máximo, la acción "subió"; si no, "cayó". Así se distinguen las que explotaron de las que colapsaron. Si caen el mismo día (serie plana o un solo dato): "sin cambio".
 - [x] `precio_actual` (y `fecha_actual`), `volumen_promedio`, `dias_con_dato`, `cobertura` (días con dato / sesiones del periodo), `moneda` (siempre USD en estos dos índices)
-- [x] Extra: `salto_max_pct` y `fecha_salto`, la mayor variación de un día. Detecta ajustes que Yahoo no aplicó: CTVA cae 84 % el 2026-10-01 por el spin-off de Corteva y queda 2.º del S&P 500 con un rango falso. HON y FDX sí están ajustados por sus spin-offs. Decidir en el Paso 4 qué hacer con estos casos.
+- [x] Extra: `salto_max_pct` y `fecha_salto`, la mayor variación de un día. Detecta ajustes que Yahoo no aplicó: CTVA cae 84 % el 2026-10-01 por el spin-off de Corteva y queda 2.º del S&P 500 con un rango falso. HON y FDX sí están ajustados por sus spin-offs. Decisión: se marcan para revisar, no se excluyen (Paso 4).
 - [x] Tests con series sintéticas: una plana, una que sube, una que cae, una con NaN y una con un solo dato (más intraday, varios tickers y saltos).
 
 Revisión rápida: `python -m src.metrics sp500 --top 15` (sin filtros).
 
 ### Paso 4: Filtros (`filters.py`)
-- [ ] Cobertura mínima, precio mínimo y volumen mínimo, todo leído desde `config.yaml`.
-- [ ] Flag `--sin-filtros` para ver el ranking en bruto.
+- [x] Cobertura mínima, precio actual mínimo y volumen mínimo en USD, todo leído desde `config.yaml`. Las excluidas salen con su motivo (pueden ser varios), y los tickers sin datos de la descarga también.
+- [x] Volumen en USD en vez de acciones: con 100 mil acciones/día NVR quedaba excluida como ilíquida aunque mueve ~200 M USD al día. Se añadió `volumen_usd_promedio` a las métricas.
+- [x] Marca `revisar` para saltos de un día ≥ `revision.salto_pct` (50 %). No excluye y se aplica también sin filtros.
+- [x] Sin filtros (`activos=False` o `filtros.activos: false`) para ver el ranking en bruto; solo se excluyen las que no tienen datos. El flag `--sin-filtros` de `main.py` llega en el Paso 6.
+
+Resultado (2026-10-06): S&P 500 501/503 pasan (fuera HONA y FDXF por cobertura); Nasdaq 100 99/101 (fuera SPCX y HONA). Para revisar: CTVA y MRNA.
+Revisión rápida: `python -m src.filters sp500` (o `--sin-filtros`).
 
 ### Paso 5: Reporte (`report.py`)
 Excel `output/top_{universo}_{fecha}.xlsx` con tres hojas:
