@@ -29,6 +29,8 @@ SECTORES_GICS = [
 # (p. ej. eléctricas: Utilities antes que Energy; REITs: Real Estate antes que Financials).
 PRIORIDAD_SECTOR = ["Utilities", "Real Estate", "Financials",
                     "Consumer Discretionary", "Industrials"]
+# Cambios de ticker que la fuente pytickersymbols aún no refleja (verificados en Yahoo)
+RENOMBRADOS = {"BK": "BNY"}
 
 
 def a_ticker_yahoo(ticker: str) -> str:
@@ -77,7 +79,7 @@ def _sp500_desde_pytickersymbols() -> pd.DataFrame:
 
     filas = [
         {
-            "ticker": a_ticker_yahoo(e["symbol"]),
+            "ticker": RENOMBRADOS.get(a_ticker_yahoo(e["symbol"]), a_ticker_yahoo(e["symbol"])),
             "nombre": e["name"],
             "sector": _sector_gics(e.get("industries", [])),
         }

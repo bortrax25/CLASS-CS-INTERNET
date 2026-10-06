@@ -39,6 +39,7 @@ rango-acciones/
 │   └── cache/             # precios descargados en .parquet (en .gitignore)
 ├── output/                # rankings .xlsx (en .gitignore)
 ├── src/
+│   ├── config.py          # lee config.yaml
 │   ├── universe.py        # carga y genera la lista de tickers
 │   ├── fetch.py           # descarga con caché, lotes y reintentos
 │   ├── metrics.py         # cálculo de min, max, fechas, rango, cobertura
@@ -47,6 +48,7 @@ rango-acciones/
 ├── main.py                # CLI: python main.py --universe sp500 --top 50
 └── tests/
     ├── test_universe.py
+    ├── test_fetch.py      # descarga simulada, sin internet
     ├── test_metrics.py    # con datos sintéticos, sin internet
     └── test_filters.py
 ```
@@ -59,19 +61,21 @@ La fuente de datos va aislada en `fetch.py` detrás de una función `get_prices(
 
 ### Paso 0: Preparar el entorno en la nube
 - [x] Crear el proyecto y abrirlo en Claude Code en la nube. *(Se creó como carpeta `rango-acciones/` dentro del repo `CLASS-CS-INTERNET`.)*
-- [x] **Revisar el acceso a red del entorno.** *(2026-10-06: el proxy del entorno responde 403 para `query1.finance.yahoo.com`, `query2.finance.yahoo.com`, `fc.yahoo.com` y `guce.yahoo.com`, y también para `en.wikipedia.org`. Hay que agregarlos a los dominios permitidos o usar acceso completo.)*
-- [ ] Prueba rápida: `python -c "import yfinance as yf; print(yf.download('AAPL', period='5d'))"` *(falla hasta habilitar los dominios de Yahoo)*
+- [x] **Revisar el acceso a red del entorno.** *(2026-10-06: al inicio el proxy bloqueaba `query1.finance.yahoo.com`, `query2.finance.yahoo.com`, `fc.yahoo.com`, `guce.yahoo.com` y `en.wikipedia.org`. Ya están habilitados.)*
+- [x] Prueba rápida: `python -c "import yfinance as yf; print(yf.download('AAPL', period='5d'))"`
 
 ### Paso 1: Universos
-- [x] `data/universes/sp500.csv` con las columnas `ticker,nombre,sector` (503 tickers). Se genera con `python -m src.universe sp500`: intenta Wikipedia con `pd.read_html` y, si no hay red, usa el paquete `pytickersymbols` de PyPI. Los tickers con punto van con guion (`BRK-B`, `BF-B`).
-- [ ] Confirmar con yfinance que los 503 tickers devuelven datos *(pendiente de red; se hará en el Paso 2 con `fallidos.csv`)*.
+- [x] `data/universes/sp500.csv` con las columnas `ticker,nombre,sector` (503 tickers). BK se corrigió a BNY, su ticker actual en Yahoo. Se genera con `python -m src.universe sp500`: intenta Wikipedia con `pd.read_html` y, si no hay red, usa el paquete `pytickersymbols` de PyPI. Los tickers con punto van con guion (`BRK-B`, `BF-B`).
+- [x] Confirmar con yfinance que los 503 tickers devuelven datos: 501 sí. Fallan CTRA y HOLX (deslistados en 2026). AVB, EQR y EA solo tienen 1 día de datos en Yahoo; los excluirá el filtro de cobertura.
 - [ ] `data/universes/bvl.csv`. Yahoo usa el sufijo `.LM` para Lima (por ejemplo `VOLCABC1.LM`). **Hay que verificar ticker por ticker cuáles devuelven datos**, porque la cobertura de la BVL en Yahoo es irregular. Guarda solo los que respondan y anota los que fallan.
 
 ### Paso 2: Descarga con caché (`fetch.py`)
-- [ ] Descargar en lotes de 50 a 100 tickers con `yf.download(..., group_by='ticker', auto_adjust=True, threads=True)`.
-- [ ] Hacer una pausa entre lotes y reintentar con backoff si hay error 429 o una respuesta vacía.
-- [ ] Guardar cada ticker en `data/cache/{ticker}.parquet` y, al repetir la corrida, descargar solo lo que falta.
-- [ ] Registrar en `output/fallidos.csv` los tickers sin datos.
+- [x] Descargar en lotes de 50 a 100 tickers con `yf.download(..., group_by='ticker', auto_adjust=True, threads=True)`. *(`python -m src.fetch sp500`)*
+- [x] Hacer una pausa entre lotes y reintentar con backoff si hay error 429 o una respuesta vacía. Los fallos definitivos (deslistado) se reintentan una sola vez.
+- [x] Guardar cada ticker en `data/cache/{ticker}.parquet` y, al repetir la corrida, descargar solo lo que falta. La caché vale por el día de descarga y el rango pedido; al día siguiente se baja todo de nuevo, porque los precios ajustados del pasado cambian con cada dividendo o split.
+- [x] Registrar los tickers sin datos, con su motivo, en `output/fallidos_{universo}.csv` (uno por universo para que no se pisen).
+
+Resultado S&P 500 (2026-10-06): 501/503 con datos, 95 s sin caché, 1,3 s con caché.
 
 ### Paso 3: Métricas (`metrics.py`)
 Por ticker:
