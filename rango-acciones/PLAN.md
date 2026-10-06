@@ -79,11 +79,14 @@ Resultado (2026-10-06): S&P 500 503/503 con datos, 95 s sin caché y 1,3 s con c
 
 ### Paso 3: Métricas (`metrics.py`)
 Por ticker:
-- [ ] `precio_min`, `fecha_min`, `precio_max`, `fecha_max`
-- [ ] `rango_abs`, `rango_pct`, `ratio`
-- [ ] `direccion`: si el mínimo fue antes que el máximo, la acción "subió"; si no, "cayó". Así se distinguen las que explotaron de las que colapsaron.
-- [ ] `precio_actual`, `volumen_promedio`, `cobertura` (porcentaje de días con dato), `moneda` (siempre USD en estos dos índices)
-- [ ] Tests con series sintéticas: una plana, una que sube, una que cae, una con NaN y una con un solo dato.
+- [x] `precio_min`, `fecha_min`, `precio_max`, `fecha_max` (con `--intraday`: mínimo de low y máximo de high)
+- [x] `rango_abs`, `rango_pct`, `ratio`
+- [x] `direccion`: si el mínimo fue antes que el máximo, la acción "subió"; si no, "cayó". Así se distinguen las que explotaron de las que colapsaron. Si caen el mismo día (serie plana o un solo dato): "sin cambio".
+- [x] `precio_actual` (y `fecha_actual`), `volumen_promedio`, `dias_con_dato`, `cobertura` (días con dato / sesiones del periodo), `moneda` (siempre USD en estos dos índices)
+- [x] Extra: `salto_max_pct` y `fecha_salto`, la mayor variación de un día. Detecta ajustes que Yahoo no aplicó: CTVA cae 84 % el 2026-10-01 por el spin-off de Corteva y queda 2.º del S&P 500 con un rango falso. HON y FDX sí están ajustados por sus spin-offs. Decidir en el Paso 4 qué hacer con estos casos.
+- [x] Tests con series sintéticas: una plana, una que sube, una que cae, una con NaN y una con un solo dato (más intraday, varios tickers y saltos).
+
+Revisión rápida: `python -m src.metrics sp500 --top 15` (sin filtros).
 
 ### Paso 4: Filtros (`filters.py`)
 - [ ] Cobertura mínima, precio mínimo y volumen mínimo, todo leído desde `config.yaml`.
