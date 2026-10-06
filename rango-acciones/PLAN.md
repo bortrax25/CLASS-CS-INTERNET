@@ -106,6 +106,11 @@ Excel `output/top_{universo}_{fecha}.xlsx` con tres hojas:
 
 Con formato de porcentajes, fechas legibles y la fila de encabezados congelada.
 
+- [x] `src/report.py` con `exportar_excel`: hojas "Top N", "Todos", "Excluidos" y una cuarta, "Parámetros", con el periodo y los filtros usados.
+- [x] Nombre y sector de cada empresa; `Rango abs`, `Rango %` y `Ratio` como fórmulas sobre el mínimo y el máximo; porcentajes guardados como fracciones; fechas `yyyy-mm-dd`; Arial; autofiltro; encabezados y ticker congelados; comentarios que explican las columnas clave.
+- [x] Filas con salto sospechoso (`Revisar`) resaltadas en amarillo.
+- [x] Verificado con LibreOffice (2026-10-06): 1.653 fórmulas en el S&P 500 y 447 en el Nasdaq 100, sin errores y con los mismos valores que calcula Python.
+
 ### Paso 6: CLI (`main.py`)
 ```
 python main.py --universe sp500 --top 50
