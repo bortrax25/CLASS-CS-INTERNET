@@ -14,16 +14,19 @@ pytest            # no necesita internet
 
 | Universo | Archivo | Tickers | Fuente |
 |---|---|---|---|
-| S&P 500 | `data/universes/sp500.csv` | 503 (501 con datos) | `pytickersymbols` 1.17.10 (datos de Wikipedia) |
-| BVL | `data/universes/bvl.csv` | pendiente | pendiente |
+| S&P 500 | `data/universes/sp500.csv` | 503 | Wikipedia, 2026-10-06 (sector GICS) |
+| Nasdaq 100 | `data/universes/nasdaq100.csv` | 101 | Wikipedia, 2026-10-06 (industria ICB) |
 
-Para regenerar el S&P 500: `python -m src.universe sp500`. Intenta primero Wikipedia y,
-si no hay acceso, usa el paquete `pytickersymbols` de PyPI.
+Para regenerarlas: `python -m src.universe sp500` y `python -m src.universe nasdaq100`.
+Intentan primero Wikipedia y, si no hay acceso, usan el paquete `pytickersymbols` de PyPI
+(que va por detrás de la composición real).
 
 Notas:
 - Los tickers usan la notación de Yahoo (`BRK-B`, `BF-B`, no `BRK.B`).
-- La lista es una foto de la composición del índice; no refleja altas y bajas posteriores.
-  Regenerarla con Wikipedia cuando haya red para tener la versión al día.
+- Cada lista es una foto de la composición del índice el día que se generó; no refleja
+  altas y bajas posteriores ni las empresas que salieron durante 2026.
+- El Nasdaq 100 tiene 101 tickers porque Alphabet cotiza con dos clases (GOOGL y GOOG).
+  Muchos también están en el S&P 500; la caché de precios es compartida.
 - Con la fuente `pytickersymbols`, el sector se deduce de su lista de industrias y puede
   diferir del sector GICS oficial en casos ambiguos. Es solo informativo.
 
@@ -38,14 +41,9 @@ python -m src.fetch sp500 --refrescar  # fuerza la descarga
 - Los tickers sin datos van a `output/fallidos_{universo}.csv` con el motivo que da Yahoo.
 - Si se corre con el mercado abierto, la fila de hoy es parcial (precio y volumen del momento) y queda así en la caché hasta el día siguiente. Usar `--refrescar` después del cierre para tenerla completa.
 
-### Fallidos conocidos del S&P 500 (2026-10-06)
+### Fallidos
 
-| Ticker | Situación |
-|---|---|
-| CTRA (Coterra) | Sin datos en Yahoo ("possibly delisted") |
-| HOLX (Hologic) | Sin datos en Yahoo ("possibly delisted") |
-| AVB, EQR, EA | Yahoo solo devuelve 1 día suelto de agosto. Los excluirá el filtro de cobertura |
-| BK (BNY) | Cambió de ticker a BNY; ya corregido en `sp500.csv` |
+Ver `output/fallidos_sp500.csv` y `output/fallidos_nasdaq100.csv` tras cada corrida.
 
 ## Red
 

@@ -6,4 +6,5 @@ pyarrow>=15.0
 pytest>=8.0
 # Solo para regenerar las listas de tickers (src/universe.py)
 lxml>=5.0
+requests>=2.31
 pytickersymbols>=1.17

@@ -17,7 +17,7 @@ descarga:
 
 universos:
   sp500: data/universes/sp500.csv
-  bvl: data/universes/bvl.csv
+  nasdaq100: data/universes/nasdaq100.csv
 
 rutas:
   cache: data/cache

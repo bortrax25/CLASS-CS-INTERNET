@@ -3,7 +3,7 @@
 ## Objetivo
 Encontrar las empresas cotizadas cuya diferencia entre el precio máximo y el mínimo durante 2026 (desde el 1 de enero hasta la fecha de ejecución) sea la mayor, y entregar un ranking en Excel.
 
-- **Fase 1 (este plan):** validar la lógica con yfinance sobre dos muestras, el S&P 500 y la Bolsa de Valores de Lima (BVL).
+- **Fase 1 (este plan):** validar la lógica con yfinance sobre dos índices de EE. UU., el S&P 500 y el Nasdaq 100. Todo cotiza en USD.
 - **Fase 2 (después):** escalar a unas 50 mil empresas cambiando solo la fuente de datos.
 
 ---
@@ -35,7 +35,7 @@ rango-acciones/
 ├── config.yaml            # fechas, filtros, universo, rutas
 ├── pytest.ini
 ├── data/
-│   ├── universes/         # sp500.csv, bvl.csv (lista de tickers fija, versionada)
+│   ├── universes/         # sp500.csv, nasdaq100.csv (lista de tickers fija, versionada)
 │   └── cache/             # precios descargados en .parquet (en .gitignore)
 ├── output/                # rankings .xlsx (en .gitignore)
 ├── src/
@@ -65,9 +65,9 @@ La fuente de datos va aislada en `fetch.py` detrás de una función `get_prices(
 - [x] Prueba rápida: `python -c "import yfinance as yf; print(yf.download('AAPL', period='5d'))"`
 
 ### Paso 1: Universos
-- [x] `data/universes/sp500.csv` con las columnas `ticker,nombre,sector` (503 tickers). BK se corrigió a BNY, su ticker actual en Yahoo. Se genera con `python -m src.universe sp500`: intenta Wikipedia con `pd.read_html` y, si no hay red, usa el paquete `pytickersymbols` de PyPI. Los tickers con punto van con guion (`BRK-B`, `BF-B`).
-- [x] Confirmar con yfinance que los 503 tickers devuelven datos: 501 sí. Fallan CTRA y HOLX (deslistados en 2026). AVB, EQR y EA solo tienen 1 día de datos en Yahoo; los excluirá el filtro de cobertura.
-- [ ] `data/universes/bvl.csv`. Yahoo usa el sufijo `.LM` para Lima (por ejemplo `VOLCABC1.LM`). **Hay que verificar ticker por ticker cuáles devuelven datos**, porque la cobertura de la BVL en Yahoo es irregular. Guarda solo los que respondan y anota los que fallan.
+- [x] `data/universes/sp500.csv` con las columnas `ticker,nombre,sector` (503 tickers, sector GICS). Se genera con `python -m src.universe sp500` desde Wikipedia (composición al 2026-10-06); si no hay red, usa el paquete `pytickersymbols` de PyPI, que va atrasado. Los tickers con punto van con guion (`BRK-B`, `BF-B`).
+- [x] `data/universes/nasdaq100.csv` (101 tickers: Alphabet tiene GOOGL y GOOG; sector según la industria ICB de Wikipedia). Se genera con `python -m src.universe nasdaq100`.
+- [x] Confirmar con yfinance que todos devuelven datos: 503/503 y 101/101. Con historia corta en 2026: HONA y FDXF (spin-offs) y SPCX (IPO); el filtro de cobertura los dejará fuera.
 
 ### Paso 2: Descarga con caché (`fetch.py`)
 - [x] Descargar en lotes de 50 a 100 tickers con `yf.download(..., group_by='ticker', auto_adjust=True, threads=True)`. *(`python -m src.fetch sp500`)*
@@ -75,14 +75,14 @@ La fuente de datos va aislada en `fetch.py` detrás de una función `get_prices(
 - [x] Guardar cada ticker en `data/cache/{ticker}.parquet` y, al repetir la corrida, descargar solo lo que falta. La caché vale por el día de descarga y el rango pedido; al día siguiente se baja todo de nuevo, porque los precios ajustados del pasado cambian con cada dividendo o split.
 - [x] Registrar los tickers sin datos, con su motivo, en `output/fallidos_{universo}.csv` (uno por universo para que no se pisen).
 
-Resultado S&P 500 (2026-10-06): 501/503 con datos, 95 s sin caché, 1,3 s con caché.
+Resultado (2026-10-06): S&P 500 503/503 con datos, 95 s sin caché y 1,3 s con caché. Nasdaq 100 101/101; comparte caché con el S&P 500 y solo bajó los 15 tickers que no están en él.
 
 ### Paso 3: Métricas (`metrics.py`)
 Por ticker:
 - [ ] `precio_min`, `fecha_min`, `precio_max`, `fecha_max`
 - [ ] `rango_abs`, `rango_pct`, `ratio`
 - [ ] `direccion`: si el mínimo fue antes que el máximo, la acción "subió"; si no, "cayó". Así se distinguen las que explotaron de las que colapsaron.
-- [ ] `precio_actual`, `volumen_promedio`, `cobertura` (porcentaje de días con dato), `moneda`
+- [ ] `precio_actual`, `volumen_promedio`, `cobertura` (porcentaje de días con dato), `moneda` (siempre USD en estos dos índices)
 - [ ] Tests con series sintéticas: una plana, una que sube, una que cae, una con NaN y una con un solo dato.
 
 ### Paso 4: Filtros (`filters.py`)
@@ -100,7 +100,7 @@ Con formato de porcentajes, fechas legibles y la fila de encabezados congelada.
 ### Paso 6: CLI (`main.py`)
 ```
 python main.py --universe sp500 --top 50
-python main.py --universe bvl --top 20 --sin-filtros
+python main.py --universe nasdaq100 --top 20 --sin-filtros
 python main.py --universe sp500 --intraday
 ```
 
@@ -112,7 +112,7 @@ python main.py --universe sp500 --intraday
 
 ## Criterios de "listo" (Fase 1)
 - `pytest` pasa sin internet.
-- La corrida del S&P 500 termina en menos de 10 minutos la primera vez y en menos de 1 minuto con caché.
+- La corrida del S&P 500 (y la del Nasdaq 100) termina en menos de 10 minutos la primera vez y en menos de 1 minuto con caché.
 - El Excel abre bien y el top 3 coincide con la verificación manual.
 - La lista de tickers fallidos está documentada.
 

@@ -2,7 +2,7 @@
 import pandas as pd
 import pytest
 
-from src.universe import _sector_gics, a_ticker_yahoo, cargar_universo
+from src.universe import _columna, _sector_gics, a_ticker_yahoo, cargar_universo
 
 
 def test_ticker_yahoo_usa_guion():
@@ -41,4 +41,18 @@ def test_sp500_versionado():
     assert 495 <= len(df) <= 510
     assert "BRK-B" in set(df["ticker"])
     assert not df["ticker"].str.contains(r"\.").any()
+    assert (df["sector"] != "").all()
+
+
+def test_columna_ignora_notas_de_wikipedia():
+    tabla = pd.DataFrame({"Ticker": ["A"], "ICB Industry[1]": ["Technology"]})
+    assert _columna(tabla, "ICB Industry").tolist() == ["Technology"]
+    with pytest.raises(KeyError):
+        _columna(tabla, "GICS Sector")
+
+
+def test_nasdaq100_versionado():
+    df = cargar_universo("nasdaq100")
+    assert 95 <= len(df) <= 105
+    assert {"AAPL", "MSFT", "GOOGL", "GOOG"} <= set(df["ticker"])
     assert (df["sector"] != "").all()
