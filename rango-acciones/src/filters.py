@@ -80,7 +80,7 @@ def aplicar_filtros(
 
 
 def main() -> None:
-    from src.config import cargar_config, ruta_proyecto
+    from src.config import cargar_config, periodo, ruta_proyecto
     from src.fetch import get_prices
     from src.metrics import calcular_metricas
     from src.universe import cargar_universo
@@ -93,7 +93,7 @@ def main() -> None:
 
     cfg = cargar_config()
     tickers = cargar_universo(args.universo)["ticker"].tolist()
-    precios = get_prices(tickers, cfg["periodo"]["inicio"], cfg["periodo"]["fin"],
+    precios = get_prices(tickers, *periodo(cfg),
                          cache_dir=ruta_proyecto(cfg["rutas"]["cache"]))
     pasan, excluidas = aplicar_filtros(
         calcular_metricas(precios), cfg["filtros"], salto_pct=cfg["revision"]["salto_pct"],

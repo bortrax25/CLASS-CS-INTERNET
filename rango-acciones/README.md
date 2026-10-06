@@ -30,6 +30,12 @@ Notas:
 - Con la fuente `pytickersymbols`, el sector se deduce de su lista de industrias y puede
   diferir del sector GICS oficial en casos ambiguos. Es solo informativo.
 
+## Periodo
+
+En `config.yaml`, `periodo.inicio` y `periodo.fin` son fechas incluidas. Hoy: del
+2026-01-01 al 2026-10-05. Con `fin: null` se usa hasta hoy. El Excel lleva en el nombre
+la fecha de corte (`top_sp500_2026-10-05.xlsx`).
+
 ## Descarga de precios
 
 ```bash

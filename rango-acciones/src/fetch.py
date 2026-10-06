@@ -218,7 +218,7 @@ def get_prices(
 
 
 def main() -> None:
-    from src.config import cargar_config, ruta_proyecto
+    from src.config import cargar_config, periodo, ruta_proyecto
     from src.universe import cargar_universo
 
     p = argparse.ArgumentParser(description="Descarga (con caché) los precios de un universo")
@@ -232,7 +232,7 @@ def main() -> None:
     ruta_fallidos = ruta_proyecto(cfg["rutas"]["output"]) / f"fallidos_{args.universo}.csv"
     t0 = time.time()
     precios = get_prices(
-        tickers, cfg["periodo"]["inicio"], cfg["periodo"]["fin"],
+        tickers, *periodo(cfg),
         cache_dir=ruta_proyecto(cfg["rutas"]["cache"]),
         ruta_fallidos=ruta_fallidos,
         tamano_lote=cfg["descarga"]["tamano_lote"],

@@ -16,7 +16,7 @@ Encontrar las empresas cotizadas cuya diferencia entre el precio máximo y el m�
 | Métricas secundarias | `rango_abs = max - min` (en moneda local), `ratio = max / min` | Para consulta. No ordenan el top |
 | Precio usado | Cierre ajustado (`auto_adjust=True`) | Evita que los splits y contrasplits inflen el rango |
 | Opción alternativa | Flag `--intraday` que usa High/Low | Para comparar. No es la opción por defecto |
-| Periodo | `2026-01-01` hasta hoy | Configurable en `config.yaml` |
+| Periodo | `2026-01-01` al `2026-10-05`, ambos incluidos | Configurable en `config.yaml` (`fin: null` = hasta hoy). El corte al 5 de octubre se pidió para que los Excel no usen datos posteriores |
 | Cobertura mínima | Excluir tickers con menos del 80 % de días hábiles con dato | Deja fuera las IPO y los deslistados del año, que tienen periodos cortos. Configurable |
 | Filtros anti-ruido | Precio actual mínimo ($1) y volumen promedio diario mínimo **en USD** (cierre × volumen, $5 M) | Evita que el top se llene de penny stocks ilíquidas. En USD y no en acciones para no castigar acciones caras (NVR). Configurable, y desactivables |
 | Saltos de un día > 50 % | Se marcan para revisión en la columna `revisar`, no se excluyen | Pueden ser spin-offs sin ajustar (CTVA) o noticias reales (MRNA) |

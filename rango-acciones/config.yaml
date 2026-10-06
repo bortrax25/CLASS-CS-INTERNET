@@ -1,8 +1,8 @@
 # Configuración de rango-acciones
 
 periodo:
-  inicio: "2026-01-01"
-  fin: null              # null = hasta hoy
+  inicio: "2026-01-01"     # incluido
+  fin: "2026-10-05"        # incluido; null = hasta hoy
 
 filtros:
   activos: true             # false = ranking en bruto (igual que --sin-filtros)
